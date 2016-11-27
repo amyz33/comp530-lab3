@@ -28,9 +28,13 @@ int delete  (const char *string, size_t strlen);
  */
 void check_max_nodes  ();
 
+/* Optional shut-down routine to wake up and terminate
+   the delete thread.  May not be required. */
+void shutdown_delete_thread ();
+
 
 /* Print the structure of the tree.  Mostly useful for debugging. */
-void print (); 
+void print ();
 
 /* Determines whether to allow blocking until 
  * a name is available.

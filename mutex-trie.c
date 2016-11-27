@@ -11,7 +11,10 @@ void init(int numthreads) {
   /* Your code here */
 }
 
-
+void shutdown_delete_thread() {
+  /* Your code here */
+  return;
+}
 
 int insert (const char *string, size_t strlen, int32_t ip4_address) {
   /* Your code here */
@@ -23,8 +26,8 @@ int search  (const char *string, size_t strlen, int32_t *ip4_address) {
   return 0;
 }
 int delete  (const char *string, size_t strlen) {
-  /* Your code here */
-  return 0;
+/* Your code here */
+return 0;
 }
 
 void check_max_nodes  () {

@@ -148,7 +148,8 @@ int my_tests() {
   rv = insert("google", 6, 4);
   if (!rv) die ("Failed to insert key google\n");
 
-  check_max_nodes();
+  rv = insert("boggle", 6, 5);
+  if (!rv) die ("Failed to insert key boggle\n");
 
   rv = insert("goggle", 6, 5);
   if (!rv) die ("Failed to insert key goggle\n");
@@ -362,8 +363,8 @@ int main(int argc, char ** argv) {
 
   // Run the self-tests if we are in debug mode
 #ifdef DEBUG
-  //self_tests();
-  my_tests();
+  self_tests();
+  //my_tests();
 #endif
 
   // Launch client threads

@@ -10,6 +10,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e20b8c9a-3dfa-4c67-a5c1-7c21ec690270" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/main.c" afterPath="$PROJECT_DIR$/main.c" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sequential-trie.c" afterPath="$PROJECT_DIR$/sequential-trie.c" />
     </list>
@@ -39,21 +40,21 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="sequential-trie.c" pinned="false" current-in-tab="true">
+      <file leaf-file-name="sequential-trie.c" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/sequential-trie.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="364">
-              <caret line="408" column="14" lean-forward="false" selection-start-line="408" selection-start-column="14" selection-end-line="408" selection-end-column="14" />
+            <state relative-caret-position="6930">
+              <caret line="462" column="70" lean-forward="true" selection-start-line="462" selection-start-column="70" selection-end-line="462" selection-end-column="70" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="main.c" pinned="false" current-in-tab="false">
+      <file leaf-file-name="main.c" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/main.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-368">
-              <caret line="126" column="29" lean-forward="true" selection-start-line="126" selection-start-column="29" selection-end-line="126" selection-end-column="29" />
+            <state relative-caret-position="4306">
+              <caret line="407" column="14" lean-forward="true" selection-start-line="407" selection-start-column="14" selection-end-line="407" selection-end-column="14" />
               <folding>
                 <element signature="e#539#563#0" expanded="true" />
               </folding>
@@ -71,6 +72,7 @@
       <find>printf(&quot;insert</find>
       <find>client</find>
       <find>insert\n</find>
+      <find>print</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -307,12 +309,12 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1480271629724</updated>
-      <workItem from="1480271643941" duration="21765000" />
+      <workItem from="1480271643941" duration="26941000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="21765000" />
+    <option name="totallyTimeSpent" value="26941000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1280" height="773" extended-state="6" />
@@ -396,21 +398,21 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/main.c">
+    <entry file="file://$PROJECT_DIR$/sequential-trie.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-368">
-          <caret line="126" column="29" lean-forward="true" selection-start-line="126" selection-start-column="29" selection-end-line="126" selection-end-column="29" />
-          <folding>
-            <element signature="e#539#563#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="6930">
+          <caret line="462" column="70" lean-forward="true" selection-start-line="462" selection-start-column="70" selection-end-line="462" selection-end-column="70" />
+          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sequential-trie.c">
+    <entry file="file://$PROJECT_DIR$/main.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="364">
-          <caret line="408" column="14" lean-forward="false" selection-start-line="408" selection-start-column="14" selection-end-line="408" selection-end-column="14" />
-          <folding />
+        <state relative-caret-position="4306">
+          <caret line="407" column="14" lean-forward="true" selection-start-line="407" selection-start-column="14" selection-end-line="407" selection-end-column="14" />
+          <folding>
+            <element signature="e#539#563#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

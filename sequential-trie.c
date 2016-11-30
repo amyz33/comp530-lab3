@@ -18,7 +18,7 @@ struct trie_node {
 
 static struct trie_node * root = NULL;
 static int node_count = 0;
-static int max_count = 1;  //Try to stay at no more than 100 nodes
+static int max_count = 100;  //Try to stay at no more than 100 nodes
 
 struct trie_node * new_leaf (const char *string, size_t strlen, int32_t ip4_address) {
     struct trie_node *new_node = malloc(sizeof(struct trie_node));
@@ -412,30 +412,31 @@ int drop_one_node  () {
 
     while (foundLeaf == 0) {
 
-        printf("Node key: %s\n", node->key);
-        printf("concat: %s\n", concat);
         if (node->children == NULL && node->next == NULL) {
             //found leaf
             strncpy(tmp, node->key, node->strlen);
-            strcat(tmp, concat);
-            strcpy(concat, tmp);
+            tmp[node->strlen] = '\0';
+            strncat(tmp, concat, concatlen);
+            strncpy(concat, tmp, concatlen + node->strlen);
             concatlen = concatlen + node->strlen;
             foundLeaf = 1;
         } else if (node->next != NULL) {
             //switch node to the node right in tree
-            printf("right: ");
             node = node->next;
         } else {
             //switch node to the node down in tree
-            printf("down: ");
             strncpy(tmp, node->key, node->strlen);
-            strcat(tmp, concat);
-            strcpy(concat, tmp);
+            tmp[node->strlen] = '\0';
+            strncat(tmp, concat, concatlen);
+            strncpy(concat, tmp, concatlen + node->strlen);
             concatlen = concatlen + node->strlen;
             node = node->children;
         }
     }
 
+    concat[concatlen] = '\0';
+
+    printf("Node key: %s\n", node->key);
     printf("concat: %s\n", concat);
     int result = delete (concat, concatlen);
     printf("delete result: %d\n", result);
@@ -459,8 +460,8 @@ void check_max_nodes  () {
 
 
 void _print (struct trie_node *node) {
-    printf ("Node at %p.  Key %.*s, IP %d.  Next %p, Children %p\n",
-            node, node->strlen, node->key, node->ip4_address, node->next, node->children);
+//    printf ("Node at %p.  Key %.*s, IP %d.  Next %p, Children %p\n",
+//            node, node->strlen, node->key, node->ip4_address, node->next, node->children);
     if (node->children)
         _print(node->children);
     if (node->next)

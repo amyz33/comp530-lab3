@@ -20,7 +20,7 @@ int simulation_length = 30; // default to 30 seconds
 volatile int finished = 0;
 
 // Uncomment this line for debug printing
-//#define DEBUG 1
+#define DEBUG 1
 #ifdef DEBUG
 #define DEBUG_PRINT(...) printf(__VA_ARGS__)
 #else
@@ -142,6 +142,22 @@ client(void *arg)
     rv = delete(ky, len);			    \
     if (!rv) die ("Failed to delete key " ky "\n"); \
   } while (0)
+
+int my_tests() {
+  int rv;
+  rv = insert("google", 6, 4);
+  if (!rv) die ("Failed to insert key google\n");
+
+  check_max_nodes();
+
+  rv = insert("goggle", 6, 5);
+  if (!rv) die ("Failed to insert key goggle\n");
+
+  check_max_nodes();
+
+  printf("End my test\n");
+  return 0;
+}
 
 int self_tests() {
   int rv;
@@ -346,7 +362,8 @@ int main(int argc, char ** argv) {
 
   // Run the self-tests if we are in debug mode
 #ifdef DEBUG
-  self_tests();
+  //self_tests();
+  my_tests();
 #endif
 
   // Launch client threads

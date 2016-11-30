@@ -1,3 +1,5 @@
+/* -*- mode:c; c-file-style:"k&r"; c-basic-offset: 4; tab-width:4; indent-tabs-mode:nil; mode:auto-fill; fill-column:78; -*- */
+/* vim: set ts=4 sw=4 et tw=78 fo=cqt wm=0: */
 /* A simple, (reverse) trie.  Only for use with 1 thread. */
 
 #include <stddef.h>
@@ -16,7 +18,7 @@ struct trie_node {
 
 static struct trie_node * root = NULL;
 static int node_count = 0;
-static int max_count = 100;  //Try to stay at no more than 100 nodes
+static int max_count = 1;  //Try to stay at no more than 100 nodes
 
 struct trie_node * new_leaf (const char *string, size_t strlen, int32_t ip4_address) {
     struct trie_node *new_node = malloc(sizeof(struct trie_node));
@@ -310,6 +312,7 @@ _delete (struct trie_node *node, const char *string,
 
         // If this key is longer than our search string, the key isn't here
         if (node->strlen > keylen) {
+            printf("node-strlen > keylen\n");
             return NULL;
         } else if (strlen > keylen) {
             struct trie_node *found =  _delete(node->children, string, strlen - keylen);
@@ -335,9 +338,9 @@ _delete (struct trie_node *node, const char *string,
                 return NULL;
         } else {
             assert (strlen == keylen);
-
             /* We found it! Clear the ip4 address and return. */
             if (node->ip4_address) {
+                printf("should reach this point in delete\n");
                 node->ip4_address = 0;
 
                 /* Delete the root node if we empty the tree */
@@ -346,10 +349,10 @@ _delete (struct trie_node *node, const char *string,
                     free(node);
                     node_count--;
                     return (struct trie_node *) 0x100100; /* XXX: Don't use this pointer for anything except
-						 * comparison with NULL, since the memory is freed.
-						 * Return a "poison" pointer that will probably
-						 * segfault if used.
-						 */
+                                                           * comparison with NULL, since the memory is freed.
+                                                           * Return a "poison" pointer that will probably
+                                                           * segfault if used.
+                                                           */
                 }
                 return node;
             } else {
@@ -383,30 +386,74 @@ _delete (struct trie_node *node, const char *string,
     }
 }
 
-int delete  (const char *string, size_t strlen) {
-// Skip strings of length 0
-if (strlen == 0)
-return 0;
+int delete (const char *string, size_t strlen) {
+    printf("strlen: %zd\n", strlen);
+    // Skip strings of length 0
+    if (strlen == 0)
+        return 0;
 
-return (NULL != _delete(root, string, strlen));
+    return (NULL != _delete(root, string, strlen));
 }
 
 
-/* Find one node to remove from the tree. 
+/* Find one node to remove from the tree.
  * Use any policy you like to select the node.
  */
 int drop_one_node  () {
     // Your code here
-    return 0;
+    struct trie_node *node = root;          //Start with root
+    int foundLeaf = 0;                      //found leaf boolean
+    char * concat = (char *) malloc(1024);
+    memset(concat, '\0', 1024);
+    char * tmp = (char *) malloc(1024);
+    memset(tmp, '\0', 1024);
+    int concatlen = 0;
+    print("Node cound is %d", node_count);
+
+    while (foundLeaf == 0) {
+
+        printf("Node key: %s\n", node->key);
+        printf("concat: %s\n", concat);
+        if (node->children == NULL && node->next == NULL) {
+            //found leaf
+            strncpy(tmp, node->key, node->strlen);
+            strcat(tmp, concat);
+            strcpy(concat, tmp);
+            concatlen = concatlen + node->strlen;
+            foundLeaf = 1;
+        } else if (node->next != NULL) {
+            //switch node to the node right in tree
+            printf("right: ");
+            node = node->next;
+        } else {
+            //switch node to the node down in tree
+            printf("down: ");
+            strncpy(tmp, node->key, node->strlen);
+            strcat(tmp, concat);
+            strcpy(concat, tmp);
+            concatlen = concatlen + node->strlen;
+            node = node->children;
+        }
+    }
+
+    printf("concat: %s\n", concat);
+    int result = delete (concat, concatlen);
+    printf("delete result: %d\n", result);
+    printf("tmplength: %ld\n", strlen(tmp));
+    free(tmp);
+    free(concat);
+    return result;
+
 }
 
 /* Check the total node count; see if we have exceeded a the max.
  */
 void check_max_nodes  () {
     while (node_count > max_count) {
-        printf("Warning: not dropping nodes yet.  Drop one node not implemented\n");
-        break;
-        //drop_one_node();
+//        printf("Warning: not dropping nodes yet.  Drop one node not implemented\n");
+//        break;
+        drop_one_node();
+        printf("node_count: %d\n", node_count);
     }
 }
 

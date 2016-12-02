@@ -16,7 +16,7 @@
 #include "trie.h"
 
 int separate_delete_thread = 0;
-int simulation_length = 30; // default to 30 seconds
+int simulation_length = 5; // default to 30 seconds
 volatile int finished = 0;
 
 // Uncomment this line for debug printing
@@ -145,13 +145,20 @@ client(void *arg)
 
 int my_tests() {
   int rv;
+
+  rv = insert("map", 3, 9);
+  if (!rv) die ("Failed to insert key google\n");
+
+  rv = insert("ramp", 4, 1);
+  if (!rv) die ("Failed to insert key google\n");
+
   rv = insert("google", 6, 4);
   if (!rv) die ("Failed to insert key google\n");
 
   rv = insert("boggle", 6, 5);
   if (!rv) die ("Failed to insert key boggle\n");
 
-  rv = insert("goggle", 6, 5);
+  rv = insert("goggle", 6, 2);
   if (!rv) die ("Failed to insert key goggle\n");
 
   check_max_nodes();
@@ -363,8 +370,8 @@ int main(int argc, char ** argv) {
 
   // Run the self-tests if we are in debug mode
 #ifdef DEBUG
-  self_tests();
-  //my_tests();
+  //self_tests();
+  my_tests();
 #endif
 
   // Launch client threads

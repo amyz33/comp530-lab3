@@ -18,7 +18,7 @@ struct trie_node {
 
 static struct trie_node * root = NULL;
 static int node_count = 0;
-static int max_count = 100;  //Try to stay at no more than 100 nodes
+static int max_count = 8;  //Try to stay at no more than 100 nodes
 
 struct trie_node * new_leaf (const char *string, size_t strlen, int32_t ip4_address) {
     struct trie_node *new_node = malloc(sizeof(struct trie_node));
@@ -441,6 +441,7 @@ int drop_one_node  () {
     int result = delete (concat, concatlen);
     printf("delete result: %d\n", result);
     printf("tmplength: %ld\n", strlen(tmp));
+
     free(tmp);
     free(concat);
     return result;

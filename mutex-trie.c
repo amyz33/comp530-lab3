@@ -11,6 +11,9 @@
 #include "trie.h"
 
 pthread_mutex_t mutex;
+pthread_cond_t cond;
+
+extern int separate_delete_thread;
 
 struct trie_node {
     struct trie_node *next;  /* parent list */
@@ -84,13 +87,19 @@ int compare_keys_substring (const char *string1, int len1, const char *string2, 
 
 void init(int numthreads) {
   /* Your code here */
-  pthread_mutex_init(&mutex, NULL);
+  if (pthread_mutex_init(&mutex, NULL) != 0)
+    printf("\n mutex init failed\n");
+  if (pthread_cond_init(&cond, NULL) != 0)
+    printf("\n cond int failed\n");
+
 
   root = NULL;
 }
 
 void shutdown_delete_thread() {
   /* Your code here */
+  if ( 0 != pthread_cond_signal(&cond))
+    printf("failed to signal\n");
   return;
 }
 
@@ -224,18 +233,37 @@ int insert (const char *string, size_t strlen, int32_t ip4_address) {
   pthread_mutex_lock(&mutex);
 
   // Skip strings of length 0
-  if (strlen == 0)
+  if (strlen == 0) {
+    pthread_mutex_unlock (&mutex);
+    //check if delete_thread needs signal
+    if(max_count < node_count) {
+      if ( 0 != pthread_cond_signal(&cond))
+        printf("failed to signal\n");
+    }
     return 0;
+  }
 
   /* Edge case: root is null */
   if (root == NULL) {
     root = new_leaf (string, strlen, ip4_address);
+    pthread_mutex_unlock (&mutex);
+    //check if delete_thread needs signal
+    if(max_count < node_count) {
+      if ( 0 != pthread_cond_signal(&cond))
+        printf("failed to signal\n");
+    }
     return 1;
   }
 
   int rv = _insert (string, strlen, ip4_address, root, NULL, NULL);
 
   pthread_mutex_unlock (&mutex);
+
+  //check if delete_thread needs signal
+  if(max_count < node_count) {
+    if ( 0 != pthread_cond_signal(&cond))
+      printf("failed to signal\n");
+  }
 
   return rv;
 }
@@ -281,12 +309,16 @@ _search (struct trie_node *node, const char *string, size_t strlen) {
 
 int search  (const char *string, size_t strlen, int32_t *ip4_address) {
   /* Your code here */
+//  printf("Before Search Lock\n");
   pthread_mutex_lock(&mutex);
   struct trie_node *found;
 
   // Skip strings of length 0
-  if (strlen == 0)
+  if (strlen == 0) {
+    pthread_mutex_unlock (&mutex);
+//    printf("After Search Unlock\n");
     return 0;
+  }
 
   found = _search(root, string, strlen);
 
@@ -294,6 +326,7 @@ int search  (const char *string, size_t strlen, int32_t *ip4_address) {
     *ip4_address = found->ip4_address;
 
   pthread_mutex_unlock (&mutex);
+//  printf("After Search Unlock\n");
 
   return (found != NULL);
 }
@@ -379,6 +412,8 @@ _delete (struct trie_node *node, const char *string,
         /* If the node doesn't have children, delete it.
          * Otherwise, keep it around to find the kids */
         if (found->children == NULL && found->ip4_address == 0) {
+          printf("node-next: %p\n", node->next);
+          printf("found: %p\n", found);
           assert(node->next == found);
           node->next = found->next;
           free(found);
@@ -397,16 +432,22 @@ _delete (struct trie_node *node, const char *string,
 
 int delete  (const char *string, size_t strlen) {
   /* Your code here */
+//  printf("Before Delete Lock\n");
   pthread_mutex_lock(&mutex);
+//  printf("After Delete Lock\n");
 
   printf("strlen: %zd\n", strlen);
   // Skip strings of length 0
-  if (strlen == 0)
+  if (strlen == 0){
+    pthread_mutex_unlock (&mutex);
+//    printf("After Delete Unlock\n");
     return 0;
+  }
 
   int rv = (NULL != _delete(root, string, strlen));
 
   pthread_mutex_unlock (&mutex);
+//  printf("After Delete Unlock\n");
 
   return rv;
 }
@@ -423,7 +464,7 @@ int drop_one_node  () {
   char * tmp = (char *) malloc(1024);
   memset(tmp, '\0', 1024);
   int concatlen = 0;
-  print("Node cound is %d", node_count);
+  print("Node cound is %d\n", node_count);
 
   while (foundLeaf == 0) {
 
@@ -453,7 +494,7 @@ int drop_one_node  () {
 
   printf("Node key: %s\n", node->key);
   printf("concat: %s\n", concat);
-  int result = delete (concat, concatlen);
+  int result = (NULL != _delete (root, concat, concatlen));
   printf("delete result: %d\n", result);
   printf("tmplength: %ld\n", strlen(tmp));
 
@@ -466,18 +507,25 @@ int drop_one_node  () {
 /* Check the total node count; see if we have exceeded a the max.
  */
 void check_max_nodes  () {
-  while (node_count > max_count) {
-//        printf("Warning: not dropping nodes yet.  Drop one node not implemented\n");
-//        break;
-    drop_one_node();
-    printf("node_count: %d\n", node_count);
+
+  if (separate_delete_thread) {
+
+    pthread_cond_wait(&cond, &mutex);
+
+    while (node_count > max_count) {
+      //        printf("Warning: not dropping nodes yet.  Drop one node not implemented\n");
+      //        break;
+      drop_one_node();
+      printf("node_count: %d\n", node_count);
+    }
+    pthread_mutex_unlock(&mutex);
   }
 }
 
 
 void _print (struct trie_node *node) {
-//    printf ("Node at %p.  Key %.*s, IP %d.  Next %p, Children %p\n",
-//            node, node->strlen, node->key, node->ip4_address, node->next, node->children);
+    printf ("Node at %p.  Key %.*s, IP %d.  Next %p, Children %p\n",
+            node, node->strlen, node->key, node->ip4_address, node->next, node->children);
   if (node->children)
     _print(node->children);
   if (node->next)

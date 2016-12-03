@@ -16,7 +16,7 @@
 #include "trie.h"
 
 int separate_delete_thread = 0;
-int simulation_length = 5; // default to 30 seconds
+int simulation_length = 3; // default to 30 seconds
 volatile int finished = 0;
 
 // Uncomment this line for debug printing
@@ -370,8 +370,8 @@ int main(int argc, char ** argv) {
 
   // Run the self-tests if we are in debug mode
 #ifdef DEBUG
-  //self_tests();
-  my_tests();
+  self_tests();
+  //my_tests();
 #endif
 
   // Launch client threads

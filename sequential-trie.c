@@ -177,6 +177,8 @@ int _insert (const char *string, size_t strlen, int32_t ip4_address,
             new_node = new_leaf (string, strlen, ip4_address);
             node->strlen -= keylen;
             new_node->children = node;
+            new_node->next = node->next;
+            node->next = NULL;
 
             assert ((!parent) || (!left));
 

@@ -91,6 +91,7 @@ client(void *arg)
     switch (code % 3) {
       case 0: // Search
         DEBUG_PRINT ("Search\n");
+        //    print();
             search (buf, length, NULL);
             break;
       case 1: // insert
@@ -205,6 +206,7 @@ int self_tests() {
   if (ip != 2) die ("Found bad IP for key ab\n");
 
   rv = search("aa", 2, NULL);
+  printf("Rv is %d\n", rv);
   if (rv) die ("Found bogus key aa\n");
 
   ip = 0;

@@ -1,0 +1,4 @@
+Locking Protocol 
+  We are using hand over hand locking protocol where after we're sure the parent node will not be used, 
+  we unlock the parent node and lock the next node, all while the current node is locked. 
+

@@ -49,9 +49,7 @@ struct trie_node * new_leaf (const char *string, size_t strlen, int32_t ip4_addr
   new_node->ip4_address = ip4_address;
   new_node->children = NULL;
 
-  new_node->mutex = pthread_mutex_init(&mutex, NULL);
-
-  if (new_node->mutex != 0)
+  if (pthread_mutex_init(&new_node->mutex, NULL) != 0)
     printf("\n mutex init failed\n");
 
   return new_node;
@@ -272,9 +270,9 @@ int insert (const char *string, size_t strlen, int32_t ip4_address) {
     return 1;
   }
 
-    pthread_mutex_lock(root->mutex);
+    pthread_mutex_lock(&root->mutex);
   int rv = _insert (string, strlen, ip4_address, root, NULL, NULL);
-    pthread_mutex_unlock(root->mutex);
+    pthread_mutex_unlock(&root->mutex);
 
   //check if delete_thread needs signal
   if(max_count < node_count) {
@@ -292,7 +290,7 @@ _search (struct trie_node *node, const char *string, size_t strlen) {
 
   // First things first, check if we are NULL
   if (node == NULL) {
-      pthread_mutex_unlock(node->mutex);
+      pthread_mutex_unlock(&node->mutex);
       return NULL;
   }
 
@@ -305,19 +303,16 @@ _search (struct trie_node *node, const char *string, size_t strlen) {
 
     // If this key is longer than our search string, the key isn't here
     if (node->strlen > keylen) {
-        pthread_mutex_unlock(node->mutex);
+        pthread_mutex_unlock(&node->mutex);
       return NULL;
     } else if (strlen > keylen) {
       // Recur on children list
-        pthread_mutex_lock(node->children->mutex);
-        pthread_mutex_unlock(node->mutex);
-        int rv = _search(node->children, string, strlen - keylen);
+        pthread_mutex_lock(&node->children->mutex);
+        pthread_mutex_unlock(&node->mutex);
 
-      return rv;
+      return _search(node->children, string, strlen - keylen);
     } else {
       assert (strlen == keylen);
-
-        pthread_mutex_unlock(node->mutex);
 
       return node;
     }
@@ -326,13 +321,13 @@ _search (struct trie_node *node, const char *string, size_t strlen) {
     cmp = compare_keys(node->key, node->strlen, string, strlen, &keylen);
     if (cmp < 0) {
       // No, look right (the node's key is "less" than the search key)
-        pthread_mutex_lock(node->next->mutex);
-        pthread_mutex_unlock(node->mutex);
-        int rv = _search(node->next, string, strlen);
-      return rv;
+        pthread_mutex_lock(&node->next->mutex);
+        pthread_mutex_unlock(&node->mutex);
+
+      return _search(node->next, string, strlen);
     } else {
       // Quit early
-        pthread_mutex_unlock(node->mutex);
+        pthread_mutex_unlock(&node->mutex);
       return 0;
     }
   }
@@ -349,7 +344,7 @@ int search  (const char *string, size_t strlen, int32_t *ip4_address) {
     return 0;
   }
 
-    pthread_mutex_lock(root->mutex);
+    pthread_mutex_lock(&root->mutex);
   found = _search(root, string, strlen);
 
   if (found && ip4_address)
@@ -357,7 +352,11 @@ int search  (const char *string, size_t strlen, int32_t *ip4_address) {
 
 //  printf("After Search Unlock\n");
 
-  return (found != NULL);
+    int rv = (found != NULL);
+
+    pthread_mutex_unlock(&found->mutex);
+
+  return rv;
 }
 
 /* Recursive helper function.

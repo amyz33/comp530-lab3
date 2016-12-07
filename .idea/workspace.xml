@@ -63,8 +63,8 @@
       <file leaf-file-name="fine-trie.c" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/fine-trie.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="361">
-              <caret line="348" column="13" lean-forward="true" selection-start-line="348" selection-start-column="13" selection-end-line="348" selection-end-column="13" />
+            <state relative-caret-position="-278">
+              <caret line="310" column="43" lean-forward="false" selection-start-line="310" selection-start-column="43" selection-end-line="310" selection-end-column="43" />
               <folding />
             </state>
           </provider>
@@ -330,12 +330,12 @@
       <option name="presentableId" value="Default" />
       <updated>1480271629724</updated>
       <workItem from="1480271643941" duration="50330000" />
-      <workItem from="1480912216060" duration="5076000" />
+      <workItem from="1480912216060" duration="6155000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="55406000" />
+    <option name="totallyTimeSpent" value="56485000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1280" height="800" extended-state="0" />
@@ -479,8 +479,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/fine-trie.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="361">
-          <caret line="348" column="13" lean-forward="true" selection-start-line="348" selection-start-column="13" selection-end-line="348" selection-end-column="13" />
+        <state relative-caret-position="-278">
+          <caret line="310" column="43" lean-forward="false" selection-start-line="310" selection-start-column="43" selection-end-line="310" selection-end-column="43" />
           <folding />
         </state>
       </provider>

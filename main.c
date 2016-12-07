@@ -4,6 +4,15 @@
  * 
  * COMP 530 - University of North Carolina, Chapel Hill
  * 
+
+ Name: Amy Zhang    PID: 720402321    
+ *     Niko Reingold  PID: 720416077
+ *     
+ *  Date: 12/7/2016
+ *
+ *    I certify that no unauthorized assistance has been
+ *    received or given in the completion of this work. 
+ *
  */
 
 #include <pthread.h>

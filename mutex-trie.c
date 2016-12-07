@@ -1,6 +1,14 @@
 /* -*- mode:c; c-file-style:"k&r"; c-basic-offset: 4; tab-width:4; indent-tabs-mode:nil; mode:auto-fill; fill-column:78; -*- */
 /* vim: set ts=4 sw=4 et tw=78 fo=cqt wm=0: */
-
+/*
+Name: Amy Zhang     PID: 720402321    
+ *     Niko Reingold  PID: 720416077
+ *     
+ *  Date: 12/7/2016
+ *
+ *    I certify that no unauthorized assistance has been
+ *    received or given in the completion of this work. 
+ *
 /* A (reverse) trie with trie-wide mutual exclusion. */
 
 #include <stddef.h>

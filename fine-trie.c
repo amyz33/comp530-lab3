@@ -164,6 +164,7 @@ int _insert (const char *string, size_t strlen, int32_t ip4_address,
         root = new_node;
       }
 
+      printf("scenrio 1, insert as parent\n");
       return 1;
 
     } else if (strlen > keylen) {
@@ -180,6 +181,7 @@ int _insert (const char *string, size_t strlen, int32_t ip4_address,
 
           pthread_mutex_unlock(&node->mutex);                               //unlock current node
 
+        printf("Scenrio 2, insert as child no children\n");
         return 1;
       } else {
         // Recur on children list, store "parent" (loosely defined)
@@ -190,10 +192,14 @@ int _insert (const char *string, size_t strlen, int32_t ip4_address,
           if(left != NULL)                                                  //or left of current node
               pthread_mutex_unlock(&left->mutex);
 
+          int rv = _insert(string, strlen - keylen, ip4_address,
+                       node->children, node, NULL);
           //Maybe need to do something more here?
 
-        return _insert(string, strlen - keylen, ip4_address,
-                       node->children, node, NULL);
+          pthread_mutex_unlock(&node->children->mutex);
+          
+        printf("Scenrio 3, insert as child has children\n");
+        return rv;
       }
     } else {
       assert (strlen == keylen);
@@ -207,6 +213,7 @@ int _insert (const char *string, size_t strlen, int32_t ip4_address,
 
           pthread_mutex_unlock(&node->mutex);                               //unlock current node
 
+        printf("Scenrio 4, insert as current no ip\n");
         return 1;
       } else {
           if(parent != NULL)                                                //release parent of current node
@@ -215,6 +222,8 @@ int _insert (const char *string, size_t strlen, int32_t ip4_address,
               pthread_mutex_unlock(&left->mutex);
 
           pthread_mutex_unlock(&node->mutex);                               //unlock current node
+
+          printf("Scenrio 5, insert as current ip\n");
         return 0;
       }
     }
@@ -254,7 +263,7 @@ int _insert (const char *string, size_t strlen, int32_t ip4_address,
         root = new_node;
       }
 
-        pthread_mutex_lock(&new_node);                                    //lock new_node
+        pthread_mutex_lock(&new_node->mutex);                                    //lock new_node
 
         if(parent != NULL)                                                //release parent of current node
             pthread_mutex_unlock(&parent->mutex);
@@ -262,6 +271,8 @@ int _insert (const char *string, size_t strlen, int32_t ip4_address,
             pthread_mutex_unlock(&left->mutex);
 
        int rv = _insert(string, offset, ip4_address, node, new_node, NULL);
+
+       printf("Scenrio 6\n");
 
       return rv;
     } else {
@@ -279,6 +290,7 @@ int _insert (const char *string, size_t strlen, int32_t ip4_address,
 
             int rv = _insert(string, strlen, ip4_address, node->next, NULL, node);
 
+            printf("Scenrio 7\n");
             return rv;
         } else {
           // Insert here
@@ -292,6 +304,7 @@ int _insert (const char *string, size_t strlen, int32_t ip4_address,
 
             pthread_mutex_unlock(&node->mutex);                               //unlock current node
 
+            printf("Scenrio 8\n");
           return 1;
         }
       } else {
@@ -304,6 +317,8 @@ int _insert (const char *string, size_t strlen, int32_t ip4_address,
           parent->children = new_node;
         else if (left && left->next == node)
           left->next = new_node;
+
+        printf("Scenrio 9\n");
       }
     }
       if(parent != NULL)                                                //release parent of current node
@@ -313,6 +328,7 @@ int _insert (const char *string, size_t strlen, int32_t ip4_address,
 
       pthread_mutex_unlock(&node->mutex);                               //unlock current node
 
+      printf("Scenrio 10\n");
     return 1;
   }
 }

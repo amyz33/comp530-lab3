@@ -485,8 +485,10 @@ _delete (struct trie_node *node, const char *string,
     // If this key is longer than our search string, the key isn't here
     if (node->strlen > keylen) {
       printf("node-strlen > keylen\n");
+        pthread_mutex_unlock(&node->mutex);                     //unlock current node
       return NULL;
     } else if (strlen > keylen) {
+        pthread_mutex_lock(&node->children->mutex);             //lock child node before recursing
       struct trie_node *found =  _delete(node->children, string, strlen - keylen);
       if (found) {
         /* If the node doesn't have children, delete it.
@@ -506,8 +508,10 @@ _delete (struct trie_node *node, const char *string,
         }
 
         return node; /* Recursively delete needless interior nodes */
-      } else
-        return NULL;
+      } else {
+          pthread_mutex_unlock(&node->mutex);                     //unlock current node
+          return NULL;
+      }
     } else {
       assert (strlen == keylen);
       /* We found it! Clear the ip4 address and return. */
@@ -529,6 +533,7 @@ _delete (struct trie_node *node, const char *string,
         return node;
       } else {
         /* Just an interior node with no value */
+          pthread_mutex_unlock(&node->mutex);                     //unlock current node
         return NULL;
       }
     }
@@ -537,6 +542,7 @@ _delete (struct trie_node *node, const char *string,
     cmp = compare_keys (node->key, node->strlen, string, strlen, &keylen);
     if (cmp < 0) {
       // No, look right (the node's key is "less" than  the search key)
+        pthread_mutex_lock(&node->next->mutex);
       struct trie_node *found = _delete(node->next, string, strlen);
       if (found) {
         /* If the node doesn't have children, delete it.
@@ -552,9 +558,11 @@ _delete (struct trie_node *node, const char *string,
 
         return node; /* Recursively delete needless interior nodes */
       }
+        pthread_mutex_unlock(&node->mutex);                     //unlock current node
       return NULL;
     } else {
       // Quit early
+        pthread_mutex_unlock(&node->mutex);                     //unlock current node
       return NULL;
     }
   }
@@ -568,6 +576,8 @@ printf("strlen: %zd\n", strlen);
 if (strlen == 0){
 return 0;
 }
+
+pthread_mutex_lock(&root->mutex);               //lock root
 
 int rv = (NULL != _delete(root, string, strlen));
 
@@ -616,6 +626,7 @@ int drop_one_node  () {
 
   printf("Node key: %s\n", node->key);
   printf("concat: %s\n", concat);
+    pthread_mutex_lock(&root->mutex);                             //lock root
   int result = (NULL != _delete (root, concat, concatlen));       //call delete and the returned int goes into variable result
   printf("delete result: %d\n", result);
 

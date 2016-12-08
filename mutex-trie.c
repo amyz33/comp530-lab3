@@ -18,10 +18,11 @@ Name: Amy Zhang     PID: 720402321
 #include <pthread.h>
 #include "trie.h"
 
-pthread_mutex_t mutex;
-pthread_cond_t cond;
 
-extern int separate_delete_thread;
+pthread_mutex_t mutex; /* mutex for coarse locking*/
+pthread_cond_t cond; /* condition for signaling delete thread */
+
+extern int separate_delete_thread; /* separate delete thread that is initialized in main.c */
 
 struct trie_node {
     struct trie_node *next;  /* parent list */
@@ -94,7 +95,10 @@ int compare_keys_substring (const char *string1, int len1, const char *string2, 
 }
 
 void init(int numthreads) {
-  /* Your code here */
+  /* Initialize mutex and conditional
+   * and check for success
+   *
+   * */
   if (pthread_mutex_init(&mutex, NULL) != 0)
     printf("\n mutex init failed\n");
   if (pthread_cond_init(&cond, NULL) != 0)
@@ -105,7 +109,11 @@ void init(int numthreads) {
 }
 
 void shutdown_delete_thread() {
-  /* Your code here */
+  /* Signal delete thread to run
+   * one more time so it can exit
+   * the while loop in main.c
+   *
+   * */
   if ( 0 != pthread_cond_signal(&cond))
     printf("failed to signal\n");
   return;
@@ -240,15 +248,15 @@ int _insert (const char *string, size_t strlen, int32_t ip4_address,
 
 int insert (const char *string, size_t strlen, int32_t ip4_address) {
   /* Your code here */
-  pthread_mutex_lock(&mutex);
+  pthread_mutex_lock(&mutex);                       //lock mutex
 
   // Skip strings of length 0
   if (strlen == 0) {
     pthread_mutex_unlock (&mutex);
     //check if delete_thread needs signal
-    if(max_count < node_count) {
-      if ( 0 != pthread_cond_signal(&cond))
-        printf("failed to signal\n");
+    if(max_count < node_count) {                    //before exiting insert, we check if we exceed max_count
+      if ( 0 != pthread_cond_signal(&cond))         //if we do, signal condition
+        printf("failed to signal\n");               //verify it signaled correctly
     }
     return 0;
   }
@@ -258,21 +266,21 @@ int insert (const char *string, size_t strlen, int32_t ip4_address) {
     root = new_leaf (string, strlen, ip4_address);
     pthread_mutex_unlock (&mutex);
     //check if delete_thread needs signal
-    if(max_count < node_count) {
-      if ( 0 != pthread_cond_signal(&cond))
-        printf("failed to signal\n");
+    if(max_count < node_count) {                    //before exiting insert, we check if we exceed max_count
+      if ( 0 != pthread_cond_signal(&cond))         //if we do, signal condition
+        printf("failed to signal\n");               //verify it signaled correctly
     }
     return 1;
   }
 
   int rv = _insert (string, strlen, ip4_address, root, NULL, NULL);
 
-  pthread_mutex_unlock (&mutex);
+  pthread_mutex_unlock (&mutex);                    //after inserting node, we unlock mutex
 
   //check if delete_thread needs signal
-  if(max_count < node_count) {
-    if ( 0 != pthread_cond_signal(&cond))
-      printf("failed to signal\n");
+  if(max_count < node_count) {                      //before exiting insert, we check if we exceed max_count
+    if ( 0 != pthread_cond_signal(&cond))           //if we do, signal condition
+      printf("failed to signal\n");                 //verify it signaled correctly
   }
 
   return rv;
@@ -318,14 +326,13 @@ _search (struct trie_node *node, const char *string, size_t strlen) {
 }
 
 int search  (const char *string, size_t strlen, int32_t *ip4_address) {
-  /* Your code here */
-//  printf("Before Search Lock\n");
-  pthread_mutex_lock(&mutex);
+
+  pthread_mutex_lock(&mutex);                       //lock mutex
   struct trie_node *found;
 
   // Skip strings of length 0
   if (strlen == 0) {
-    pthread_mutex_unlock (&mutex);
+    pthread_mutex_unlock (&mutex);                  //unlock before returning
 //    printf("After Search Unlock\n");
     return 0;
   }
@@ -335,8 +342,8 @@ int search  (const char *string, size_t strlen, int32_t *ip4_address) {
   if (found && ip4_address)
     *ip4_address = found->ip4_address;
 
-  pthread_mutex_unlock (&mutex);
-//  printf("After Search Unlock\n");
+  pthread_mutex_unlock (&mutex);                    //unlock before returning
+
 
   return (found != NULL);
 }
@@ -441,23 +448,19 @@ _delete (struct trie_node *node, const char *string,
 }
 
 int delete  (const char *string, size_t strlen) {
-  /* Your code here */
-//  printf("Before Delete Lock\n");
-  pthread_mutex_lock(&mutex);
-//  printf("After Delete Lock\n");
+
+  pthread_mutex_lock(&mutex);                           //lock mutex
 
   printf("strlen: %zd\n", strlen);
   // Skip strings of length 0
   if (strlen == 0){
-    pthread_mutex_unlock (&mutex);
-//    printf("After Delete Unlock\n");
+    pthread_mutex_unlock (&mutex);                      //unlock before returning
     return 0;
   }
 
   int rv = (NULL != _delete(root, string, strlen));
 
-  pthread_mutex_unlock (&mutex);
-//  printf("After Delete Unlock\n");
+  pthread_mutex_unlock (&mutex);                        //unlock before returning
 
   return rv;
 }
@@ -518,17 +521,15 @@ int drop_one_node  () {
  */
 void check_max_nodes  () {
 
-  if (separate_delete_thread) {
+  if (separate_delete_thread) {                 //make sure check_max_nodes is only accessed by delete thread
 
-    pthread_cond_wait(&cond, &mutex);
+    pthread_cond_wait(&cond, &mutex);           //receive signal to request mutex lock
 
     while (node_count > max_count) {
-      //        printf("Warning: not dropping nodes yet.  Drop one node not implemented\n");
-      //        break;
       drop_one_node();
       printf("node_count: %d\n", node_count);
     }
-    pthread_mutex_unlock(&mutex);
+    pthread_mutex_unlock(&mutex);               //unlock mutex after deleting extra nodes
   }
 }
 

@@ -301,7 +301,7 @@ _search (struct trie_node *node, const char *string, size_t strlen) {
 
   // First things first, check if we are NULL
   if (node == NULL) {
-      pthread_mutex_unlock(&node->mutex);
+      pthread_mutex_unlock(&node->mutex);     //if the node is NULL, unlock the node
       return NULL;
   }
 
@@ -312,24 +312,21 @@ _search (struct trie_node *node, const char *string, size_t strlen) {
   if (cmp == 0) {
     // Yes, either quit, or recur on the children
 
-    // If this key is longer than our search string, the key isn't here
+    // If this key is longer than our search string, the key isn't here, so we unlock the node
     if (node->strlen > keylen) {
-        pthread_mutex_unlock(&node->mutex);
+        pthread_mutex_unlock(&node->mutex);    
       return NULL;
     } else if (strlen > keylen) {
       // Recur on children list
-       // pthread_mutex_lock(&node->children->mutex);
-        if(node->children != NULL){
-          printf("locked child\n");
-          pthread_mutex_init(&node->children->mutex, NULL);
-          pthread_mutex_lock(&node->children->mutex);
-          pthread_mutex_unlock(&node->mutex);
-          printf("Unlocked node\n");
+        if(node->children != NULL){   //if the current node has children
+            pthread_mutex_init(&node->children->mutex, NULL);   //initialize mutex for current node's child
+            pthread_mutex_lock(&node->children->mutex);         //lock current node's child
+            pthread_mutex_unlock(&node->mutex);                 //unlock current node
 
-          return _search(node->children, string, strlen - keylen);
+          return _search(node->children, string, strlen - keylen);  //recursively call _search with the current node's child as the new node
         }
-        else{
-          pthread_mutex_unlock(&node->mutex);
+        else{                         //if the current node does not have children
+          pthread_mutex_unlock(&node->mutex);                   //unlock the current node and return 0, meaning we did not find the node
 
           return 0;
         }
@@ -343,25 +340,20 @@ _search (struct trie_node *node, const char *string, size_t strlen) {
     cmp = compare_keys(node->key, node->strlen, string, strlen, &keylen);
     if (cmp < 0) {
       // No, look right (the node's key is "less" than the search key)
-    //  print();
-      printf("node->next->key: %p\n", node->next->key);
-      printf("node->next->mutex: %p\n", &node->next->mutex);
 
-      if(node->next != NULL){
-        pthread_mutex_init(&node->next->mutex, NULL);
-        pthread_mutex_lock(&node->next->mutex);
-        printf("after lock\n");
-        pthread_mutex_unlock(&node->mutex);
-        printf("after unlock\n");
+      if(node->next != NULL){                           //if the current node has a next node
+        pthread_mutex_init(&node->next->mutex, NULL);   //initialize mutex for the next node
+        pthread_mutex_lock(&node->next->mutex);         //lock the next node
+        pthread_mutex_unlock(&node->mutex);             //unlock current node
 
-        return _search(node->next, string, strlen);
-      } else{
-        pthread_mutex_unlock(&node->mutex);
+        return _search(node->next, string, strlen);     //recursively call _search on next node
+      } else{                                           //if current node does not have next node
+        pthread_mutex_unlock(&node->mutex);             //unlock current node and return 0. did not find the node
         return 0;
       }
-    } else {
+    } else {                                            
       // Quit early
-        pthread_mutex_unlock(&node->mutex);
+        pthread_mutex_unlock(&node->mutex);             //unlock current node, return 0. did not find node 
       return 0;
     }
   }
@@ -369,33 +361,25 @@ _search (struct trie_node *node, const char *string, size_t strlen) {
 
 int search  (const char *string, size_t strlen, int32_t *ip4_address) {
   /* Your code here */
-  printf("search\n");
-//  printf("Before Search Lock\n");
+
   struct trie_node *found;
-printf("search1\n");
+
   // Skip strings of length 0
   if (strlen == 0) {
-//    printf("After Search Unlock\n");
     return 0;
   }
-printf("search2\n");
-    pthread_mutex_lock(&root->mutex);
-    printf("before _search\n");
-  found = _search(root, string, strlen);
-  printf("search4\n");
-  if (found && ip4_address){
-    *ip4_address = found->ip4_address;
+
+  pthread_mutex_lock(&root->mutex);         //lock the root 
+  found = _search(root, string, strlen);    //call _search on root given the string and strlen
+  if (found && ip4_address){                //if the node is found and the ip address matches the one given
+    *ip4_address = found->ip4_address;      //set found's ip address to the given ip address
   }
-printf("search5\n");
-//  printf("After Search Unlock\n");
 
-    int rv = (found != NULL);
-      printf("search6\n");
+  int rv = (found != NULL);                 //check if found is NULL and put integer into rv
 
-      if(rv == 1){
+  if(rv == 1){                              //if found is null, unlock the node
     pthread_mutex_unlock(&found->mutex);
-      printf("search7\n");
-    }
+  }
   return rv;
 }
 

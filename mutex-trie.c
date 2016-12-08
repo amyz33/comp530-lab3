@@ -333,7 +333,6 @@ int search  (const char *string, size_t strlen, int32_t *ip4_address) {
   // Skip strings of length 0
   if (strlen == 0) {
     pthread_mutex_unlock (&mutex);                  //unlock before returning
-//    printf("After Search Unlock\n");
     return 0;
   }
 
@@ -472,47 +471,49 @@ int drop_one_node  () {
   // Your code here
   struct trie_node *node = root;          //Start with root
   int foundLeaf = 0;                      //found leaf boolean
-  char * concat = (char *) malloc(1024);
+  char * concat = (char *) malloc(1024);  //allocated memory for variable that will keep the final key
   memset(concat, '\0', 1024);
-  char * tmp = (char *) malloc(1024);
+  char * tmp = (char *) malloc(1024);     //allocated memory temporary variable 
   memset(tmp, '\0', 1024);
-  int concatlen = 0;
+  int concatlen = 0;                      //concatlen is the length of the final key
   print("Node cound is %d\n", node_count);
 
-  while (foundLeaf == 0) {
+  while (foundLeaf == 0) {                                        //while leaf is not found
 
-    if (node->children == NULL && node->next == NULL) {
+    if (node->children == NULL && node->next == NULL) {           //if the node is a leaf
       //found leaf
-      strncpy(tmp, node->key, node->strlen);
-      tmp[node->strlen] = '\0';
-      strncat(tmp, concat, concatlen);
-      strncpy(concat, tmp, concatlen + node->strlen);
-      concatlen = concatlen + node->strlen;
-      foundLeaf = 1;
-    } else if (node->next != NULL) {
+      strncpy(tmp, node->key, node->strlen);                      //copy node->key into tmp 
+      tmp[node->strlen] = '\0';                                   //made sure the node->strlen character of temp is null 
+      strncat(tmp, concat, concatlen);                            //added the node key to the final key
+      strncpy(concat, tmp, concatlen + node->strlen);             //copied contents of tmp into concat
+      concatlen = concatlen + node->strlen;                       //added strlen of node to concatlen
+      foundLeaf = 1;                                              //changed foundLeaf to 1 (we found a leaf!)
+    } else if (node->next != NULL) {                              //if the next node (not children) has content
       //switch node to the node right in tree
-      node = node->next;
-    } else {
+      node = node->next;                                          //made the current node the next node
+    } else {                                                      //if the node has children
       //switch node to the node down in tree
-      strncpy(tmp, node->key, node->strlen);
+      strncpy(tmp, node->key, node->strlen);                      //same as above strncpy and strncat lines
       tmp[node->strlen] = '\0';
       strncat(tmp, concat, concatlen);
       strncpy(concat, tmp, concatlen + node->strlen);
       concatlen = concatlen + node->strlen;
-      node = node->children;
+      node = node->children;                                      //make the child of the current node, the current node 
     }
   }
 
-  concat[concatlen] = '\0';
+  concat[concatlen] = '\0';                                       //making sure the last character of concat is null
 
   printf("Node key: %s\n", node->key);
   printf("concat: %s\n", concat);
-  int result = (NULL != _delete (root, concat, concatlen));
+  int result = (NULL != _delete (root, concat, concatlen));       //call delete and the returned int goes into variable result
   printf("delete result: %d\n", result);
-  printf("tmplength: %ld\n", strlen(tmp));
 
+
+  //free earlier mallocs
   free(tmp);
   free(concat);
+
   return result;
 
 }

@@ -2,7 +2,7 @@
 /* vim: set ts=4 sw=4 et tw=78 fo=cqt wm=0: */
 /* A simple, (reverse) trie.  Only for use with 1 thread. 
 
-Name: Amy Zhang 		PID: 720402321		
+ * Name: Amy Zhang 		PID: 720402321		
  *		 Niko Reingold	PID: 720416077
  *		 
  *	Date: 12/7/2016
@@ -421,7 +421,7 @@ int drop_one_node  () {
     char * tmp = (char *) malloc(1024);		//allocated memory temporary variable 
     memset(tmp, '\0', 1024);
     int concatlen = 0;						//concatlen is the length of the final key
-    print("Node cound is %d", node_count);w
+    print("Node count is %d", node_count);
 
     while (foundLeaf == 0) {				//while leaf is not found
 

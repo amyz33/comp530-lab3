@@ -1,0 +1,35 @@
+Locking Protocol 
+
+Search: We used a hand over hand protocol where we locked the next node/child node before we unlocked the current node and then recursed the locking and 				unlocking until we either found the node we want or we have determined that the node does not exist. 
+
+Insert: We use a hand over hands protocol where we lock the next node/child node before we unlock the parent node or the left node. 
+
+		if the lengths of the key and the string don't match: 
+
+		Case 1: inserting node as parent 
+			-	when we get to the spot that we insert the node (which requires no rearranging), we insert the node and then we unlock either the parent 	 of the inserted node or the left of the inserted node. If the inserted is a root, we don't do any unlocking because the root is unlocked
+				after the helper method returns. 
+		Case 2: inserting node as a leaf 
+			-	if current node has no children, then we insert node as child of current node and then unlock current node. 
+			-	if the current node has children, then we lock the child node of the current node. If the parent of current node is not null, we unlock 	parent node. If left of current node is not null, we unlock left node. Otherwise, recursively call _insert using the child node. 
+		Case 3: inserting node as current node (changing the ip address of current node)
+			-	if ip address for current node is 0, we want to make sure that if there is a parent or a left, they are unlocked. 
+			-	if ip address for current node is not 0, we still want to make sure that if there is a parent or a left, they are unlocked. 
+
+		if the lengths of the key and the string do match: 
+
+		if there is overlap:
+			- before we recurse on _insert, we want to lock the new_node, then release the parent of current node and left of current node. 
+
+		if there is no overlap:
+			- and if node's key is less than search key, and if next node is not null, we want to lock the next node and then release parent of current node and left of current node. Recurse on _insert using next node. 
+				- if next node is null, we want to insert new node as the next node. then release parent of current node, left of current node and the current node. 
+
+			- if node key is either equal or more than search key, we dont have to lock or unlock any nodes because at the end before we return for this part of the code, we release parent of current node, left of current node and the current node. 
+
+
+Delete: We are going to keep the entire path that we take locked. Then we will unlock the current node provided that it did not get deleted. 
+		
+		if node->next exists, then we release current node and after locking node->next 
+
+		

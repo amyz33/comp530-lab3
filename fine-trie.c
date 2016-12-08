@@ -6,7 +6,7 @@
  * Hint: We recommend using a hand-over-hand protocol to order your locks,
  * while permitting some concurrency on different subtrees.
 
- Name: Amy Zhang    PID: 720402321    
+ * Name: Amy Zhang    PID: 720402321    
  *     Niko Reingold  PID: 720416077
  *     
  *  Date: 12/7/2016
@@ -163,8 +163,6 @@ int _insert (const char *string, size_t strlen, int32_t ip4_address,
       } else if ((!parent) || (!left)) {
         root = new_node;
       }
-
-      printf("scenrio 1, insert as parent\n");
       return 1;
 
     } else if (strlen > keylen) {
@@ -180,8 +178,6 @@ int _insert (const char *string, size_t strlen, int32_t ip4_address,
               pthread_mutex_unlock(&left->mutex);
 
           pthread_mutex_unlock(&node->mutex);                               //unlock current node
-
-        printf("Scenrio 2, insert as child no children\n");
         return 1;
       } else {
         // Recur on children list, store "parent" (loosely defined)
@@ -197,8 +193,6 @@ int _insert (const char *string, size_t strlen, int32_t ip4_address,
           //Maybe need to do something more here?
 
           pthread_mutex_unlock(&node->children->mutex);
-          
-        printf("Scenrio 3, insert as child has children\n");
         return rv;
       }
     } else {
@@ -212,8 +206,6 @@ int _insert (const char *string, size_t strlen, int32_t ip4_address,
               pthread_mutex_unlock(&left->mutex);
 
           pthread_mutex_unlock(&node->mutex);                               //unlock current node
-
-        printf("Scenrio 4, insert as current no ip\n");
         return 1;
       } else {
           if(parent != NULL)                                                //release parent of current node
@@ -222,8 +214,6 @@ int _insert (const char *string, size_t strlen, int32_t ip4_address,
               pthread_mutex_unlock(&left->mutex);
 
           pthread_mutex_unlock(&node->mutex);                               //unlock current node
-
-          printf("Scenrio 5, insert as current ip\n");
         return 0;
       }
     }
@@ -272,8 +262,6 @@ int _insert (const char *string, size_t strlen, int32_t ip4_address,
 
        int rv = _insert(string, offset, ip4_address, node, new_node, NULL);
 
-       printf("Scenrio 6\n");
-
       return rv;
     } else {
       cmp = compare_keys (node->key, node->strlen, string, strlen, &keylen);
@@ -290,7 +278,6 @@ int _insert (const char *string, size_t strlen, int32_t ip4_address,
 
             int rv = _insert(string, strlen, ip4_address, node->next, NULL, node);
 
-            printf("Scenrio 7\n");
             return rv;
         } else {
           // Insert here
@@ -304,7 +291,6 @@ int _insert (const char *string, size_t strlen, int32_t ip4_address,
 
             pthread_mutex_unlock(&node->mutex);                               //unlock current node
 
-            printf("Scenrio 8\n");
           return 1;
         }
       } else {
@@ -317,8 +303,6 @@ int _insert (const char *string, size_t strlen, int32_t ip4_address,
           parent->children = new_node;
         else if (left && left->next == node)
           left->next = new_node;
-
-        printf("Scenrio 9\n");
       }
     }
       if(parent != NULL)                                                //release parent of current node
@@ -328,7 +312,6 @@ int _insert (const char *string, size_t strlen, int32_t ip4_address,
 
       pthread_mutex_unlock(&node->mutex);                               //unlock current node
 
-      printf("Scenrio 10\n");
     return 1;
   }
 }
@@ -484,13 +467,11 @@ _delete (struct trie_node *node, const char *string,
 
     // If this key is longer than our search string, the key isn't here
     if (node->strlen > keylen) {
-      printf("node-strlen > keylen\n");
 
         if(node != root){
         pthread_mutex_unlock(&node->mutex);                     //unlock current node
         }
 
-        printf("delete 1\n");
       return NULL;
     } else if (strlen > keylen) {
 
@@ -518,7 +499,7 @@ _delete (struct trie_node *node, const char *string,
           free(node);
           node_count--;
         }
-        printf("delete 2\n");
+
         return node; /* Recursively delete needless interior nodes */
       } else {
 
@@ -526,7 +507,6 @@ _delete (struct trie_node *node, const char *string,
           pthread_mutex_unlock(&node->mutex);                     //unlock current node
           }
 
-          printf("delete 3\n");
           return NULL;
       }
     } else {
@@ -548,7 +528,6 @@ _delete (struct trie_node *node, const char *string,
                                                            */
         }
 
-        printf("delete 4\n");
         return node;
       } else {
         /* Just an interior node with no value */
@@ -557,7 +536,6 @@ _delete (struct trie_node *node, const char *string,
           pthread_mutex_unlock(&node->mutex);                     //unlock current node
           }
 
-          printf("delete 5\n");
         return NULL;
       }
     }
@@ -589,20 +567,19 @@ _delete (struct trie_node *node, const char *string,
           free(found);
           node_count--;
         }
-        printf("delete 6\n");
         return node; /* Recursively delete needless interior nodes */
       }
         if(node != root){
         pthread_mutex_unlock(&node->mutex);                     //unlock current node
         }
-        printf("delete 7\n");
+
       return NULL;
     } else {
       // Quit early
         if(node != root){
         pthread_mutex_unlock(&node->mutex);                     //unlock current node
         }
-        printf("delete 8\n");
+
       return NULL;
     }
   }
@@ -618,7 +595,7 @@ return 0;
 }
 
 pthread_mutex_lock(&root->mutex);               //lock root
-printf("after root lock\n");
+
 int rv = (NULL != _delete(root, string, strlen));
 if(root != NULL){
   pthread_mutex_unlock(&root->mutex);             //unlock root
@@ -638,7 +615,7 @@ int drop_one_node  () {
   char * tmp = (char *) malloc(1024);     //allocated memory temporary variable 
   memset(tmp, '\0', 1024);
   int concatlen = 0;                      //concatlen is the length of the final key
-  print("Node cound is %d\n", node_count);
+  print("Node count is %d\n", node_count);
 
   while (foundLeaf == 0) {                                        //while leaf is not found
 

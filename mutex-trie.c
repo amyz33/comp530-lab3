@@ -1,7 +1,7 @@
 /* -*- mode:c; c-file-style:"k&r"; c-basic-offset: 4; tab-width:4; indent-tabs-mode:nil; mode:auto-fill; fill-column:78; -*- */
 /* vim: set ts=4 sw=4 et tw=78 fo=cqt wm=0: */
 /*
-Name: Amy Zhang     PID: 720402321    
+ *  Name: Amy Zhang     PID: 720402321    
  *     Niko Reingold  PID: 720416077
  *     
  *  Date: 12/7/2016
@@ -9,7 +9,7 @@ Name: Amy Zhang     PID: 720402321
  *    I certify that no unauthorized assistance has been
  *    received or given in the completion of this work. 
  *
-/* A (reverse) trie with trie-wide mutual exclusion. */
+ * A (reverse) trie with trie-wide mutual exclusion. */
 
 #include <stddef.h>
 #include <stdio.h>
@@ -476,7 +476,7 @@ int drop_one_node  () {
   char * tmp = (char *) malloc(1024);     //allocated memory temporary variable 
   memset(tmp, '\0', 1024);
   int concatlen = 0;                      //concatlen is the length of the final key
-  print("Node cound is %d\n", node_count);
+  print("Node count is %d\n", node_count);
 
   while (foundLeaf == 0) {                                        //while leaf is not found
 

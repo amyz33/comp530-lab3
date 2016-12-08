@@ -1,5 +1,5 @@
 /*
-Name: Amy Zhang 		PID: 720402321		
+ * Name: Amy Zhang 		PID: 720402321		
  *		 Niko Reingold	PID: 720416077
  *		 
  *	Date: 12/7/2016

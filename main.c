@@ -5,7 +5,7 @@
  * COMP 530 - University of North Carolina, Chapel Hill
  * 
 
- Name: Amy Zhang    PID: 720402321    
+ * Name: Amy Zhang    PID: 720402321    
  *     Niko Reingold  PID: 720416077
  *     
  *  Date: 12/7/2016
@@ -100,7 +100,6 @@ client(void *arg)
     switch (code % 3) {
       case 0: // Search
         DEBUG_PRINT ("Search\n");
-        //    print();
             search (buf, length, NULL);
             break;
       case 1: // insert

@@ -485,11 +485,23 @@ _delete (struct trie_node *node, const char *string,
     // If this key is longer than our search string, the key isn't here
     if (node->strlen > keylen) {
       printf("node-strlen > keylen\n");
+
+        if(node != root){
         pthread_mutex_unlock(&node->mutex);                     //unlock current node
+        }
+
+        printf("delete 1\n");
       return NULL;
     } else if (strlen > keylen) {
-        pthread_mutex_lock(&node->children->mutex);             //lock child node before recursing
+
+        if(node->children != NULL){
+          pthread_mutex_lock(&node->children->mutex);             //lock child node before recursing
+        }
       struct trie_node *found =  _delete(node->children, string, strlen - keylen);
+        if(node->children != NULL){
+          pthread_mutex_unlock(&node->children->mutex);             //lock child node before recursing
+        }
+
       if (found) {
         /* If the node doesn't have children, delete it.
          * Otherwise, keep it around to find the kids */
@@ -506,10 +518,15 @@ _delete (struct trie_node *node, const char *string,
           free(node);
           node_count--;
         }
-
+        printf("delete 2\n");
         return node; /* Recursively delete needless interior nodes */
       } else {
+
+          if(node != root){
           pthread_mutex_unlock(&node->mutex);                     //unlock current node
+          }
+
+          printf("delete 3\n");
           return NULL;
       }
     } else {
@@ -530,10 +547,17 @@ _delete (struct trie_node *node, const char *string,
                                                            * segfault if used.
                                                            */
         }
+
+        printf("delete 4\n");
         return node;
       } else {
         /* Just an interior node with no value */
+
+          if(node != root){
           pthread_mutex_unlock(&node->mutex);                     //unlock current node
+          }
+
+          printf("delete 5\n");
         return NULL;
       }
     }
@@ -542,8 +566,18 @@ _delete (struct trie_node *node, const char *string,
     cmp = compare_keys (node->key, node->strlen, string, strlen, &keylen);
     if (cmp < 0) {
       // No, look right (the node's key is "less" than  the search key)
-        pthread_mutex_lock(&node->next->mutex);
+
+        if(node->next != NULL){
+         pthread_mutex_lock(&node->next->mutex);
+         pthread_mutex_unlock(&node->mutex);
+        }
+
       struct trie_node *found = _delete(node->next, string, strlen);
+
+        if(node->next != NULL){
+        pthread_mutex_unlock(&node->next->mutex);
+      }
+
       if (found) {
         /* If the node doesn't have children, delete it.
          * Otherwise, keep it around to find the kids */
@@ -555,14 +589,20 @@ _delete (struct trie_node *node, const char *string,
           free(found);
           node_count--;
         }
-
+        printf("delete 6\n");
         return node; /* Recursively delete needless interior nodes */
       }
+        if(node != root){
         pthread_mutex_unlock(&node->mutex);                     //unlock current node
+        }
+        printf("delete 7\n");
       return NULL;
     } else {
       // Quit early
+        if(node != root){
         pthread_mutex_unlock(&node->mutex);                     //unlock current node
+        }
+        printf("delete 8\n");
       return NULL;
     }
   }
@@ -578,9 +618,11 @@ return 0;
 }
 
 pthread_mutex_lock(&root->mutex);               //lock root
-
+printf("after root lock\n");
 int rv = (NULL != _delete(root, string, strlen));
-
+if(root != NULL){
+  pthread_mutex_unlock(&root->mutex);             //unlock root
+}
 return rv;
 }
 
@@ -628,6 +670,7 @@ int drop_one_node  () {
   printf("concat: %s\n", concat);
     pthread_mutex_lock(&root->mutex);                             //lock root
   int result = (NULL != _delete (root, concat, concatlen));       //call delete and the returned int goes into variable result
+  pthread_mutex_unlock(&root->mutex);             //unlock root
   printf("delete result: %d\n", result);
 
   //free earlier mallocs

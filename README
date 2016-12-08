@@ -28,6 +28,8 @@ Insert: We use a hand over hands protocol where we lock the next node/child node
 			- if node key is either equal or more than search key, we dont have to lock or unlock any nodes because at the end before we return for this part of the code, we release parent of current node, left of current node and the current node. 
 
 
+Delete: We are going to keep the entire path that we take locked. Then we will unlock the current node provided that it did not get deleted. 
+		
+		if node->next exists, then we release current node and after locking node->next 
 
-
-Delete: 
+		

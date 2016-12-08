@@ -301,7 +301,7 @@ _search (struct trie_node *node, const char *string, size_t strlen) {
 
   // First things first, check if we are NULL
   if (node == NULL) {
-      pthread_mutex_unlock(&node->mutex);
+      pthread_mutex_unlock(&node->mutex);     //if the node is NULL, unlock the node
       return NULL;
   }
 
@@ -312,24 +312,21 @@ _search (struct trie_node *node, const char *string, size_t strlen) {
   if (cmp == 0) {
     // Yes, either quit, or recur on the children
 
-    // If this key is longer than our search string, the key isn't here
+    // If this key is longer than our search string, the key isn't here, so we unlock the node
     if (node->strlen > keylen) {
-        pthread_mutex_unlock(&node->mutex);
+        pthread_mutex_unlock(&node->mutex);    
       return NULL;
     } else if (strlen > keylen) {
       // Recur on children list
-       // pthread_mutex_lock(&node->children->mutex);
-        if(node->children != NULL){
-          printf("locked child\n");
-          pthread_mutex_init(&node->children->mutex, NULL);
-          pthread_mutex_lock(&node->children->mutex);
-          pthread_mutex_unlock(&node->mutex);
-          printf("Unlocked node\n");
+        if(node->children != NULL){   //if the current node has children
+            pthread_mutex_init(&node->children->mutex, NULL);   //initialize mutex for current node's child
+            pthread_mutex_lock(&node->children->mutex);         //lock current node's child
+            pthread_mutex_unlock(&node->mutex);                 //unlock current node
 
-          return _search(node->children, string, strlen - keylen);
+          return _search(node->children, string, strlen - keylen);  //recursively call _search with the current node's child as the new node
         }
-        else{
-          pthread_mutex_unlock(&node->mutex);
+        else{                         //if the current node does not have children
+          pthread_mutex_unlock(&node->mutex);                   //unlock the current node and return 0, meaning we did not find the node
 
           return 0;
         }
@@ -343,25 +340,20 @@ _search (struct trie_node *node, const char *string, size_t strlen) {
     cmp = compare_keys(node->key, node->strlen, string, strlen, &keylen);
     if (cmp < 0) {
       // No, look right (the node's key is "less" than the search key)
-    //  print();
-      printf("node->next->key: %p\n", node->next->key);
-      printf("node->next->mutex: %p\n", &node->next->mutex);
 
-      if(node->next != NULL){
-        pthread_mutex_init(&node->next->mutex, NULL);
-        pthread_mutex_lock(&node->next->mutex);
-        printf("after lock\n");
-        pthread_mutex_unlock(&node->mutex);
-        printf("after unlock\n");
+      if(node->next != NULL){                           //if the current node has a next node
+        pthread_mutex_init(&node->next->mutex, NULL);   //initialize mutex for the next node
+        pthread_mutex_lock(&node->next->mutex);         //lock the next node
+        pthread_mutex_unlock(&node->mutex);             //unlock current node
 
-        return _search(node->next, string, strlen);
-      } else{
-        pthread_mutex_unlock(&node->mutex);
+        return _search(node->next, string, strlen);     //recursively call _search on next node
+      } else{                                           //if current node does not have next node
+        pthread_mutex_unlock(&node->mutex);             //unlock current node and return 0. did not find the node
         return 0;
       }
-    } else {
+    } else {                                            
       // Quit early
-        pthread_mutex_unlock(&node->mutex);
+        pthread_mutex_unlock(&node->mutex);             //unlock current node, return 0. did not find node 
       return 0;
     }
   }
@@ -369,33 +361,25 @@ _search (struct trie_node *node, const char *string, size_t strlen) {
 
 int search  (const char *string, size_t strlen, int32_t *ip4_address) {
   /* Your code here */
-  printf("search\n");
-//  printf("Before Search Lock\n");
+
   struct trie_node *found;
-printf("search1\n");
+
   // Skip strings of length 0
   if (strlen == 0) {
-//    printf("After Search Unlock\n");
     return 0;
   }
-printf("search2\n");
-    pthread_mutex_lock(&root->mutex);
-    printf("before _search\n");
-  found = _search(root, string, strlen);
-  printf("search4\n");
-  if (found && ip4_address){
-    *ip4_address = found->ip4_address;
+
+  pthread_mutex_lock(&root->mutex);         //lock the root 
+  found = _search(root, string, strlen);    //call _search on root given the string and strlen
+  if (found && ip4_address){                //if the node is found and the ip address matches the one given
+    *ip4_address = found->ip4_address;      //set found's ip address to the given ip address
   }
-printf("search5\n");
-//  printf("After Search Unlock\n");
 
-    int rv = (found != NULL);
-      printf("search6\n");
+  int rv = (found != NULL);                 //check if found is NULL and put integer into rv
 
-      if(rv == 1){
+  if(rv == 1){                              //if found is null, unlock the node
     pthread_mutex_unlock(&found->mutex);
-      printf("search7\n");
-    }
+  }
   return rv;
 }
 
@@ -519,47 +503,48 @@ int drop_one_node  () {
   // Your code here
   struct trie_node *node = root;          //Start with root
   int foundLeaf = 0;                      //found leaf boolean
-  char * concat = (char *) malloc(1024);
+  char * concat = (char *) malloc(1024);  //allocated memory for variable that will keep the final key
   memset(concat, '\0', 1024);
-  char * tmp = (char *) malloc(1024);
+  char * tmp = (char *) malloc(1024);     //allocated memory temporary variable 
   memset(tmp, '\0', 1024);
-  int concatlen = 0;
+  int concatlen = 0;                      //concatlen is the length of the final key
   print("Node cound is %d\n", node_count);
 
-  while (foundLeaf == 0) {
+  while (foundLeaf == 0) {                                        //while leaf is not found
 
-    if (node->children == NULL && node->next == NULL) {
+    if (node->children == NULL && node->next == NULL) {           //if the node is a leaf
       //found leaf
-      strncpy(tmp, node->key, node->strlen);
-      tmp[node->strlen] = '\0';
-      strncat(tmp, concat, concatlen);
-      strncpy(concat, tmp, concatlen + node->strlen);
-      concatlen = concatlen + node->strlen;
-      foundLeaf = 1;
-    } else if (node->next != NULL) {
+      strncpy(tmp, node->key, node->strlen);                      //copy node->key into tmp 
+      tmp[node->strlen] = '\0';                                   //made sure the node->strlen character of temp is null 
+      strncat(tmp, concat, concatlen);                            //added the node key to the final key
+      strncpy(concat, tmp, concatlen + node->strlen);             //copied contents of tmp into concat
+      concatlen = concatlen + node->strlen;                       //added strlen of node to concatlen
+      foundLeaf = 1;                                              //changed foundLeaf to 1 (we found a leaf!)
+    } else if (node->next != NULL) {                              //if the next node (not children) has content
       //switch node to the node right in tree
-      node = node->next;
-    } else {
+      node = node->next;                                          //made the current node the next node
+    } else {                                                      //if the node has children
       //switch node to the node down in tree
-      strncpy(tmp, node->key, node->strlen);
+      strncpy(tmp, node->key, node->strlen);                      //same as above strncpy and strncat lines
       tmp[node->strlen] = '\0';
       strncat(tmp, concat, concatlen);
       strncpy(concat, tmp, concatlen + node->strlen);
       concatlen = concatlen + node->strlen;
-      node = node->children;
+      node = node->children;                                      //make the child of the current node, the current node 
     }
   }
 
-  concat[concatlen] = '\0';
+  concat[concatlen] = '\0';                                       //making sure the last character of concat is null
 
   printf("Node key: %s\n", node->key);
   printf("concat: %s\n", concat);
-  int result = (NULL != _delete (root, concat, concatlen));
+  int result = (NULL != _delete (root, concat, concatlen));       //call delete and the returned int goes into variable result
   printf("delete result: %d\n", result);
-  printf("tmplength: %ld\n", strlen(tmp));
 
+  //free earlier mallocs
   free(tmp);
   free(concat);
+  
   return result;
 
 }
